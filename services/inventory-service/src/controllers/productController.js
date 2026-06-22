@@ -1,5 +1,5 @@
 const productService = require("../services/productService");
-const { successResponse } = require("../utils/response");
+const { successResponse, successResponseWithMessage } = require("../utils/response");
 
 const getProducts = (req, res, next) => {
   try {
@@ -41,10 +41,19 @@ const deleteProduct = (req, res, next) => {
   }
 };
 
+const getRawData = (req, res, next) => {
+  try {
+    const rawData = productService.getRawData();
+    successResponseWithMessage(res, 200, "raw data fetched successfully");
+  } catch (error) {
+    next(error);
+  }
+};
 module.exports = {
   getProducts,
   getProductById,
   createProduct,
   updateProduct,
-  deleteProduct
+  deleteProduct,
+  getRawData
 };

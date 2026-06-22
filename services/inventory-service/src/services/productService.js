@@ -78,10 +78,15 @@ const deleteProduct = (id) => {
   return product;
 };
 
+const getRawData = () => {
+  return "Raw data from the inventory service";
+};
+
 module.exports = {
   getProducts,
   getProductById,
   createProduct,
   updateProduct,
-  deleteProduct
+  deleteProduct,
+  getRawData
 };
