@@ -17,9 +17,10 @@ const getOrderById = (req, res, next) => {
   }
 };
 
-const createOrder = (req, res, next) => {
+const createOrder = async (req, res, next) => {
   try {
-    successResponse(res, orderService.createOrder(req.body), 201);
+    const order = await orderService.createOrder(req.body);
+    successResponse(res, order, 201);
   } catch (error) {
     next(error);
   }

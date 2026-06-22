@@ -1,5 +1,7 @@
 const { v4: uuidv4 } = require("uuid");
 const AppError = require("../utils/AppError");
+const { checkProductStock, deductStock } = require("../clients/inventoryClient");
+const { processPayment } = require("../clients/paymentClient");
 
 const ORDER_STATUSES = ["PENDING", "CONFIRMED", "CANCELLED"];
 
@@ -52,18 +54,41 @@ const getOrderById = (id) => {
   return order;
 };
 
-const createOrder = (payload) => {
+const createOrder = async (payload) => {
   validateOrder(payload);
+  
+  // Step 1: Check product exists and has stock in inventory service
+  const product = await checkProductStock(payload.productId);
+  
+  // Step 2: Create order with PENDING status
   const order = {
     id: uuidv4(),
     productId: payload.productId.trim(),
     quantity: payload.quantity,
     totalAmount: payload.totalAmount,
-    status: payload.status,
+    status: "PENDING",
+    paymentId: null,
     createdAt: new Date().toISOString()
   };
   orders.push(order);
-  return order;
+
+  try {
+    // Step 3: Process payment with payment service
+    const payment = await processPayment(order.id, payload.totalAmount);
+    
+    // Step 4: Deduct stock from inventory service
+    await deductStock(payload.productId, payload.quantity);
+    
+    // Step 5: Update order status to CONFIRMED
+    order.status = "CONFIRMED";
+    order.paymentId = payment.id;
+    
+    return order;
+  } catch (error) {
+    // Rollback: Remove order if payment or inventory operation fails
+    orders = orders.filter((item) => item.id !== order.id);
+    throw error;
+  }
 };
 
 const updateOrder = (id, payload) => {
