@@ -47,7 +47,7 @@ const getOrders = () => orders;
 const getOrderById = (id) => {
   const order = orders.find((item) => item.id === id);
   if (!order) {
-    throw new AppError("Order not found", 404);
+    throw new AppError("Order not found!", 404);
   }
   return order;
 };
